@@ -18,7 +18,7 @@ class ViewController: UIViewController {
     
     private lazy var weatherIconImageView: UIImageView = {
         let view = UIImageView()
-        view.backgroundColor = .black
+//        view.backgroundColor = .black
         return view
     }()
     
@@ -65,17 +65,27 @@ class ViewController: UIViewController {
         setupViews()
         setupConstraints()
         
-        networkWeatherManager.delegate = self
+        networkWeatherManager.onCompletion = { [weak self] currentWeather in
+            guard let self = self else { return }
+            self.updateInterfaceWith(weather: currentWeather)
+        }
         networkWeatherManager.fetchCurrentWeather(forCity: "London")
     }
     
     @objc func searchButtonPressed() {
-        self.presentSearchAlertController(withTitle: "Enter city name", message: nil, style: .alert) { city in
+        self.presentSearchAlertController(withTitle: "Enter city name", message: nil, style: .alert) { [unowned self] city in
             self.networkWeatherManager.fetchCurrentWeather(forCity: city) 
         }
     }
     
-    
+    func updateInterfaceWith(weather: CurrentWeather) {
+        DispatchQueue.main.async {
+            self.cityLabel.text = weather.cityName
+            self.temperatureLabel.text = weather.temperatureString + " C"
+            self.feelsLikeTemperatureLabel.text = "Feels like \(weather.feelsLikeTemperatureString) C"
+            self.weatherIconImageView.image = UIImage(systemName: weather.systemIconNameString)
+        }
+    }
 }
 
 extension ViewController: NetworkWeatherManagerDelegate {

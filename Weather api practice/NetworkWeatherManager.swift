@@ -13,7 +13,7 @@ protocol NetworkWeatherManagerDelegate {
 
 struct NetworkWeatherManager {
     
-    var delegate: NetworkWeatherManagerDelegate?
+    var onCompletion: ((CurrentWeather) -> Void)?
     
     func fetchCurrentWeather(forCity city: String) {
         
@@ -23,7 +23,7 @@ struct NetworkWeatherManager {
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
                 if let currentWeather = self.parseJSON(withData: data) {
-                    self.delegate?.updateInterface(self, with: currentWeather)
+                    self.onCompletion?(currentWeather)
                 }
             }
         }
